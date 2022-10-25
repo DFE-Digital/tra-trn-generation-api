@@ -39,5 +39,5 @@ jobs:
     - name: Tests
       uses: ./.github/workflows/actions/test
       with:
-        test_project_path: TrnGeneratorApi/test/TrnGeneratorApi.Tests
+        test_project_path: TrnGeneratorApi/tests/TrnGeneratorApi.Tests
         report_name: "Test results"
