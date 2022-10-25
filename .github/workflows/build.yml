@@ -9,10 +9,6 @@ on:
     - main
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: TrnGeneratorApi
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -41,14 +37,7 @@ jobs:
       working-directory: TrnGeneratorApi
 
     - name: Tests
-      id: tests
-      run: dotnet test ./test/TrnGeneratorApi.Tests/ --configuration Release --no-build --logger trx
-      working-directory: TrnGeneratorApi
-
-    - name: Tests report
-      uses: dorny/test-reporter@v1
-      if: always() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+      uses: ./.github/workflows/actions/test
       with:
-        name: Test results
-        path: 'TrnGeneratorApi/test/TrnGeneratorApi.Tests/**/*.trx'
-        reporter: dotnet-trx
+        test_project_path: TrnGeneratorApi/test/TrnGeneratorApi.Tests
+        report_name: "Test results"
