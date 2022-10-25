@@ -1,0 +1,54 @@
+name: Build
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: TrnGeneratorApi
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Lint
+      run: |
+        #https://github.com/dotnet/format/issues/1433
+        dotnet tool install -g dotnet-format --version "6.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
+        dotnet-format --verify-no-changes
+      working-directory: TrnGeneratorApi
+
+    - name: Build
+      run: dotnet build --configuration Release
+      working-directory: TrnGeneratorApi
+
+    - name: Tests
+      id: tests
+      run: dotnet test ./test/TrnGeneratorApi.Tests/ --configuration Release --no-build --logger trx
+      working-directory: TrnGeneratorApi
+
+    - name: Tests report
+      uses: dorny/test-reporter@v1
+      if: always() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+      with:
+        name: Test results
+        path: 'TrnGeneratorApi/test/TrnGeneratorApi.Tests/**/*.trx'
+        reporter: dotnet-trx
