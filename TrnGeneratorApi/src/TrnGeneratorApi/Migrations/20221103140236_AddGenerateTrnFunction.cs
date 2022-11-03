@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TrnGeneratorApi.Migrations
+namespace TrnGeneratorApi.Migrations;
+
+public partial class AddGenerateTrnFunction : Migration
 {
-    public partial class AddGenerateTrnFunction : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            var functionSql = @"
+        var functionSql = @"
 CREATE OR REPLACE FUNCTION fn_generate_trn() 
 RETURNS INT
 LANGUAGE plpgsql
@@ -40,12 +40,11 @@ END;
 $$
 ";
 
-            migrationBuilder.Sql(functionSql);
-        }
+        migrationBuilder.Sql(functionSql);
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.Sql("DROP FUNCTION fn_generate_trn()");
-        }
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.Sql("DROP FUNCTION fn_generate_trn()");
     }
 }
