@@ -1,4 +1,4 @@
-﻿namespace TrnGeneratorApi.Models;
+namespace TrnGeneratorApi.Models;
 
 public class IntReturn
 {
