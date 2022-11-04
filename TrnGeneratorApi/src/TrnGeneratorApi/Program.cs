@@ -43,7 +43,8 @@ app.MapPost("/api/v1/trn2", (TrnGeneratorDbContext dbContext) =>
 {
     var nextTrn = dbContext
                     .Set<IntReturn>()
-                    .FromSqlRaw("SELECT \"fn_generate_trn_from_range\" as Value FROM fn_generate_trn_from_range()").AsEnumerable()
+                    .FromSqlRaw("SELECT \"fn_generate_trn_from_range\" as Value FROM fn_generate_trn_from_range()")
+                    .AsEnumerable()
                     .FirstOrDefault();
 
     if (nextTrn != null)

@@ -36,7 +36,7 @@ public class TrnGeneratorDbContext : DbContext
         var trnRangeBuilder = modelBuilder.Entity<TrnRange>();
         trnRangeBuilder
             .ToTable("trn_range")
-            .HasKey(e => e.FromTrn);        
+            .HasKey(e => e.FromTrn);
         trnRangeBuilder
             .HasIndex(e => e.FromTrn)
             .HasFilter("is_exhausted IS FALSE")
