@@ -29,7 +29,7 @@ app.MapPost("/api/v1/trn", (TrnGeneratorDbContext dbContext) =>
                     .AsEnumerable()
                     .FirstOrDefault();
 
-    if (nextTrn != null)
+    if (nextTrn != null && nextTrn.Value.HasValue)
     {
         return Results.Ok(nextTrn.Value);
     }
@@ -47,7 +47,7 @@ app.MapPost("/api/v1/trn2", (TrnGeneratorDbContext dbContext) =>
                     .AsEnumerable()
                     .FirstOrDefault();
 
-    if (nextTrn != null)
+    if (nextTrn != null && nextTrn.Value.HasValue)
     {
         return Results.Ok(nextTrn.Value);
     }
