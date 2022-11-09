@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TrnGeneratorApi.Migrations;
+namespace TrnGeneratorApi.BenchmarkTests.Migrations;
 
 public partial class AddGenerateTrnFromRangeFunction : Migration
 {

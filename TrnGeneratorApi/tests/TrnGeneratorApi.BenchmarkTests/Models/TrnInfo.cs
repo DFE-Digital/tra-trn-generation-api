@@ -1,4 +1,4 @@
-namespace TrnGeneratorApi.Models;
+namespace TrnGeneratorApi.BenchmarkTests.Models;
 
 public class TrnInfo
 {

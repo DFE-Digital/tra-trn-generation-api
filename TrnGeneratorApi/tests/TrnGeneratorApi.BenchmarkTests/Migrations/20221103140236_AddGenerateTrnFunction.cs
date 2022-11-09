@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TrnGeneratorApi.Migrations;
+namespace TrnGeneratorApi.BenchmarkTests.Migrations;
 
 public partial class AddGenerateTrnFunction : Migration
 {
@@ -18,22 +18,21 @@ DECLARE
     next_available_trn INT;
 BEGIN
     UPDATE
-        trn_range
+        trn_info
     SET
-        is_exhausted = CASE WHEN next_trn >= to_trn THEN TRUE ELSE FALSE END, 
-        next_trn = next_trn + 1
+        is_claimed = TRUE
     WHERE
-        from_trn = (SELECT
-                        from_trn
-                    FROM
-                        trn_range
-                    WHERE
-                        is_exhausted IS FALSE
-                    ORDER BY
-                        from_trn
-                    FOR UPDATE
-                    LIMIT 1)
-    RETURNING next_trn - 1
+        trn = (SELECT
+                    trn
+               FROM
+                    trn_info
+               WHERE
+                    is_claimed IS FALSE
+               ORDER BY
+                    trn
+               FOR UPDATE SKIP LOCKED
+               LIMIT 1)
+    RETURNING trn
     INTO next_available_trn;
     
     RETURN next_available_trn;

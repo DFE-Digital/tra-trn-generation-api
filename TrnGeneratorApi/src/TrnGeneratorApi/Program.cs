@@ -39,22 +39,4 @@ app.MapPost("/api/v1/trn", (TrnGeneratorDbContext dbContext) =>
     }
 });
 
-app.MapPost("/api/v1/trn2", (TrnGeneratorDbContext dbContext) =>
-{
-    var nextTrn = dbContext
-                    .Set<IntReturn>()
-                    .FromSqlRaw("SELECT \"fn_generate_trn_from_range\" as Value FROM fn_generate_trn_from_range()")
-                    .AsEnumerable()
-                    .FirstOrDefault();
-
-    if (nextTrn != null && nextTrn.Value.HasValue)
-    {
-        return Results.Ok(nextTrn.Value);
-    }
-    else
-    {
-        return Results.NotFound();
-    }
-});
-
 app.Run();

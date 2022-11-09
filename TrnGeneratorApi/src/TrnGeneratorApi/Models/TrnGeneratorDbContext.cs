@@ -11,8 +11,6 @@ public class TrnGeneratorDbContext : DbContext
         connectionString = configuration.GetConnectionString("DefaultConnection");
     }
 
-    public DbSet<TrnInfo> TrnInfos => Set<TrnInfo>();
-
     public DbSet<TrnRange> TrnRanges => Set<TrnRange>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -24,15 +22,6 @@ public class TrnGeneratorDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var trnInfoBuilder = modelBuilder.Entity<TrnInfo>();
-        trnInfoBuilder
-            .ToTable("trn_info")
-            .HasKey(e => e.Trn);
-        trnInfoBuilder
-            .HasIndex(e => e.Trn)
-            .HasFilter("is_claimed IS FALSE")
-            .HasDatabaseName("ix_trn_info_unclaimed_trns");
-
         var trnRangeBuilder = modelBuilder.Entity<TrnRange>();
         trnRangeBuilder
             .ToTable("trn_range")
