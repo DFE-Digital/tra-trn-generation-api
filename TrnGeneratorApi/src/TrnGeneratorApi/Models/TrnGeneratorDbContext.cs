@@ -8,7 +8,8 @@ public class TrnGeneratorDbContext : DbContext
 
     public TrnGeneratorDbContext(IConfiguration configuration)
     {
-        connectionString = configuration.GetConnectionString("DefaultConnection");
+        connectionString = configuration.GetConnectionString("DefaultConnection") ??
+            throw new Exception("Connection string DefaultConnection is missing.");
     }
 
     public DbSet<TrnRange> TrnRanges => Set<TrnRange>();

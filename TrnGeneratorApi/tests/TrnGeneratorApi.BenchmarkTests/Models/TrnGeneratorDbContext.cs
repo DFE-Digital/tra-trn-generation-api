@@ -1,5 +1,6 @@
 namespace TrnGeneratorApi.BenchmarkTests.Models;
 
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -9,7 +10,8 @@ public class TrnGeneratorDbContext : DbContext
 
     public TrnGeneratorDbContext(IConfiguration configuration)
     {
-        connectionString = configuration.GetConnectionString("DefaultConnection");
+        connectionString = configuration.GetConnectionString("DefaultConnection") ??
+            throw new Exception("Connection string DefaultConnection is missing.");
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

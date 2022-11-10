@@ -24,7 +24,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        string authorizationHeader = Request.Headers["Authorization"];
+        string? authorizationHeader = Request.Headers["Authorization"];
 
         if (string.IsNullOrEmpty(authorizationHeader))
         {
