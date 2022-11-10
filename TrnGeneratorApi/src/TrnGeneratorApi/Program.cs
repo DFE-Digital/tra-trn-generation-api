@@ -33,24 +33,24 @@ app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
 
 app.MapPost("/api/v1/trn",
-    [Authorize]
-    (TrnGeneratorDbContext dbContext) =>
-    {
-        var nextTrn = dbContext
-                        .Set<IntReturn>()
-                        .FromSqlRaw("SELECT \"fn_generate_trn\" as Value FROM fn_generate_trn()")
-                        .AsEnumerable()
-                        .FirstOrDefault();
+[Authorize]
+(TrnGeneratorDbContext dbContext) =>
+{
+    var nextTrn = dbContext
+                    .Set<IntReturn>()
+                    .FromSqlRaw("SELECT \"fn_generate_trn\" as Value FROM fn_generate_trn()")
+                    .AsEnumerable()
+                    .FirstOrDefault();
 
-        if (nextTrn != null && nextTrn.Value.HasValue)
-        {
-            return Results.Ok(nextTrn.Value);
-        }
-        else
-        {
-            return Results.NotFound();
-        }
-    })
+    if (nextTrn != null && nextTrn.Value.HasValue)
+    {
+        return Results.Ok(nextTrn.Value);
+    }
+    else
+    {
+        return Results.NotFound();
+    }
+})
 .Produces<int>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status401Unauthorized)
 .Produces(StatusCodes.Status404NotFound)

@@ -1,4 +1,4 @@
-﻿namespace TrnGeneratorApi.Security.Authentication.ApiKey;
+namespace TrnGeneratorApi.Security.Authentication.ApiKey;
 
 public static class ApiKeyAuthenticationDefaults
 {

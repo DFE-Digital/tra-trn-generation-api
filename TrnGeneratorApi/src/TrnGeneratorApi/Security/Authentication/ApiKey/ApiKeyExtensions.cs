@@ -8,7 +8,7 @@ public static class ApiKeyExtensions
     => builder.AddApiKey(ApiKeyAuthenticationDefaults.AuthenticationScheme);
 
     public static AuthenticationBuilder AddApiKey(this AuthenticationBuilder builder, string authenticationScheme)
-        => builder.AddApiKey(authenticationScheme, _ => {});
+        => builder.AddApiKey(authenticationScheme, _ => { });
 
     public static AuthenticationBuilder AddApiKey(this AuthenticationBuilder builder, Action<ApiKeyAuthenticationOptions>? configureOptions)
         => builder.AddApiKey(ApiKeyAuthenticationDefaults.AuthenticationScheme, configureOptions);
