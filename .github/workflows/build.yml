@@ -53,6 +53,6 @@ jobs:
     - name: Tests
       uses: ./.github/workflows/actions/test
       with:
-        test_project_path: TrnGeneratorApi/tests/TrnGeneratorApi.Tests
+        test_project_path: TrnGeneratorApi/tests/TrnGeneratorApi.IntegrationTests
         report_name: "Test results"
-        dotnet_test_args: '-e ConnectionStrings__DefaultConnection="Host=localhost;Username=postgres;Password=trn_generator;Database=trn_generator" ApiKeys__0="12345"'
+        dotnet_test_args: '-e ConnectionStrings__DefaultConnection="Host=localhost;Username=postgres;Password=trn_generator;Database=trn_generator" -e ApiKeys__0="12345"'
