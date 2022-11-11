@@ -57,3 +57,5 @@ app.MapPost("/api/v1/trn",
 .Produces(StatusCodes.Status500InternalServerError);
 
 app.Run();
+
+public partial class Program { }
