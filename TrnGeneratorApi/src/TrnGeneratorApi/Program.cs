@@ -116,17 +116,17 @@ async (TrnRange trnRange, TrnGeneratorDbContext dbContext) =>
 {
     if (trnRange.ToTrn < trnRange.FromTrn)
     {
-        return Results.BadRequest("toTrn should be greater than or equal to fromTrn");
+        return Results.BadRequest("toTrn should be greater than or equal to fromTrn.");
     }
 
     if (!trnRange.IsExhausted & ((trnRange.NextTrn < trnRange.FromTrn) || (trnRange.NextTrn > trnRange.ToTrn)))
     {
-        return Results.BadRequest("nextTrn should be within range fromTrn -> toTrn unless range is already exhausted");
+        return Results.BadRequest("nextTrn should be within range fromTrn -> toTrn unless range is already exhausted.");
     }
 
     if (await dbContext.TrnRanges.AnyAsync(r => Math.Max(0, Math.Min(trnRange.ToTrn, r.ToTrn) - Math.Max(trnRange.FromTrn, r.FromTrn) + 1) != 0))
     {
-        return Results.BadRequest("New TRN range overlaps existing TRN range");
+        return Results.BadRequest("New TRN range overlaps existing TRN range.");
     }
 
     dbContext.TrnRanges.Add(trnRange);
