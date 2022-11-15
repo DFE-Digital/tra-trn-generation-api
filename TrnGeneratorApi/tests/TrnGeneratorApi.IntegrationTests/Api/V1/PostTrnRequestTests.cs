@@ -37,15 +37,18 @@ public class PostTrnRequestTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var client = _factory
+        var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
                     c =>
                     {
-                        _ = c.AddInMemoryCollection(testConfig);
+                        _ = c.AddUserSecrets<PostTrnRequestTests>()
+                            .AddInMemoryCollection(testConfig);
                     });
-            })
+            });
+
+        var client = customFactory
             .CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "xyz");
 
@@ -86,19 +89,22 @@ public class PostTrnRequestTests : IClassFixture<WebApplicationFactory<Program>>
             trnRange2
         };
 
-        var client = _factory
+        var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
                     c =>
                     {
-                        _ = c.AddInMemoryCollection(testConfig);
+                        _ = c.AddUserSecrets<PostTrnRequestTests>()
+                            .AddInMemoryCollection(testConfig);
                     });
-            })
+            });
+
+        var client = customFactory
             .CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "09876");
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = customFactory.Services.CreateScope())
         {
             var scopedServices = scope.ServiceProvider;
             var db = scopedServices.GetRequiredService<TrnGeneratorDbContext>();
@@ -149,19 +155,22 @@ public class PostTrnRequestTests : IClassFixture<WebApplicationFactory<Program>>
             trnRange2
         };
 
-        var client = _factory
+        var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
                     c =>
                     {
-                        _ = c.AddInMemoryCollection(testConfig);
+                        _ = c.AddUserSecrets<PostTrnRequestTests>()
+                            .AddInMemoryCollection(testConfig);
                     });
-            })
+            });
+
+        var client = customFactory
             .CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "09876");
 
-        using (var scope = _factory.Services.CreateScope())
+        using (var scope = customFactory.Services.CreateScope())
         {
             var scopedServices = scope.ServiceProvider;
             var db = scopedServices.GetRequiredService<TrnGeneratorDbContext>();

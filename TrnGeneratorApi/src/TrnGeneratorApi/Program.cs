@@ -27,6 +27,12 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+if (builder.Environment.IsProduction() &&
+    Environment.GetEnvironmentVariable("WEBSITE_ROLE_INSTANCE_ID") == "0")
+{
+    await MigrateDatabase();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
@@ -140,5 +146,12 @@ async (TrnRange trnRange, TrnGeneratorDbContext dbContext) =>
 .Produces(StatusCodes.Status500InternalServerError);
 
 app.Run();
+
+async Task MigrateDatabase()
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<TrnGeneratorDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 public partial class Program { }
