@@ -113,7 +113,7 @@ async (TrnGeneratorDbContext dbContext) =>
 trnRangesGroup.MapPost("/",
 [Authorize]
 async (TrnRange trnRange, TrnGeneratorDbContext dbContext) =>
-{    
+{
     if (trnRange.ToTrn < trnRange.FromTrn)
     {
         return Results.BadRequest("toTrn should be greater than or equal to fromTrn");

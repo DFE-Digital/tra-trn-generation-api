@@ -20,7 +20,7 @@ public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
     {
         // Arrange
         var fromTrn = 2000000;
-        var client = _factory.CreateClient();        
+        var client = _factory.CreateClient();
 
         // Act
         var response = await client.DeleteAsync($"/api/v1/trn-ranges/{fromTrn}");

@@ -89,7 +89,7 @@ public class PostTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
             ToTrn = 2000999,
             NextTrn = 2000000,
             IsExhausted = false
-        };        
+        };
 
         var client = _factory
             .WithWebHostBuilder(builder =>
