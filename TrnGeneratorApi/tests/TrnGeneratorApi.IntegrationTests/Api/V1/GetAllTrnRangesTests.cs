@@ -4,12 +4,13 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using TrnGeneratorApi.IntegrationTests.Helpers;
 using TrnGeneratorApi.Models;
+using TrnGeneratorApi.Responses;
 
-public class GetTrnRangesTests : IClassFixture<WebApplicationFactory<Program>>
+public class GetAllTrnRangesTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
 
-    public GetTrnRangesTests(WebApplicationFactory<Program> factory)
+    public GetAllTrnRangesTests(WebApplicationFactory<Program> factory)
     {
         _factory = factory;
     }
@@ -37,13 +38,13 @@ public class GetTrnRangesTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
                     c =>
                     {
-                        _ = c.AddUserSecrets<GetTrnRangesTests>()
+                        _ = c.AddUserSecrets<GetAllTrnRangesTests>()
                             .AddInMemoryCollection(testConfig);
                     });
             });
@@ -89,13 +90,13 @@ public class GetTrnRangesTests : IClassFixture<WebApplicationFactory<Program>>
             trnRange2
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
                     c =>
                     {
-                        _ = c.AddUserSecrets<GetTrnRangesTests>()
+                        _ = c.AddUserSecrets<GetAllTrnRangesTests>()
                             .AddInMemoryCollection(testConfig);
                     });
             });
@@ -119,9 +120,10 @@ public class GetTrnRangesTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<TrnRange[]>();
+        var result = await response.Content.ReadFromJsonAsync<GetAllTrnRangesResponse>();
         Assert.NotNull(result);
-        Assert.Equal(2, result.Length);
+        Assert.NotNull(result.TrnRanges);
+        Assert.Equal(2, result.TrnRanges.Count());
     }
 
     [Fact]
@@ -134,13 +136,13 @@ public class GetTrnRangesTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
                     c =>
                     {
-                        _ = c.AddUserSecrets<GetTrnRangesTests>()
+                        _ = c.AddUserSecrets<GetAllTrnRangesTests>()
                             .AddInMemoryCollection(testConfig);
                     });
             });
@@ -162,8 +164,8 @@ public class GetTrnRangesTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<TrnRange[]>();
+        var result = await response.Content.ReadFromJsonAsync<GetAllTrnRangesResponse>();
         Assert.NotNull(result);
-        Assert.Empty(result);
+        Assert.Empty(result.TrnRanges);
     }
 }

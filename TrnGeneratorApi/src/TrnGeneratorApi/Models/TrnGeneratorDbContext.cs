@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 public class TrnGeneratorDbContext : DbContext
 {
-    private string connectionString;
+    private string _connectionString;
 
     public TrnGeneratorDbContext(IConfiguration configuration)
     {
-        connectionString = configuration.GetConnectionString("DefaultConnection") ??
+        _connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new Exception("Connection string DefaultConnection is missing.");
     }
 
@@ -17,7 +17,7 @@ public class TrnGeneratorDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            .UseNpgsql(connectionString)
+            .UseNpgsql(_connectionString)
             .UseSnakeCaseNamingConvention();
     }
 

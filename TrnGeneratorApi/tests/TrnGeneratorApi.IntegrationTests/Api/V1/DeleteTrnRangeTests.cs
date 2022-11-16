@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using TrnGeneratorApi.IntegrationTests.Helpers;
 using TrnGeneratorApi.Models;
+using TrnGeneratorApi.Responses;
 
 public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -40,7 +41,7 @@ public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -94,7 +95,7 @@ public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 
         var fromTrn = 2000000;
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -123,7 +124,7 @@ public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 
             // Assert
             Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
-            var result = await response.Content.ReadFromJsonAsync<TrnRange>();
+            var result = await response.Content.ReadFromJsonAsync<DeleteTrnRangeResponse>();
             Assert.NotNull(result);
             Assert.Equal(trnRange1.FromTrn, result.FromTrn);
             Assert.Equal(trnRange1.ToTrn, result.ToTrn);
@@ -167,7 +168,7 @@ public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 
         var fromTrn = 3000000;
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -231,7 +232,7 @@ public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 
         var fromTrn = 2000000;
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -274,7 +275,7 @@ public class DeleteTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(

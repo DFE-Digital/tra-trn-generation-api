@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using TrnGeneratorApi.IntegrationTests.Helpers;
 using TrnGeneratorApi.Models;
+using TrnGeneratorApi.Responses;
 
 public class GetTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -39,7 +40,7 @@ public class GetTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -93,7 +94,7 @@ public class GetTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 
         var fromTrn = 2000000;
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -123,7 +124,7 @@ public class GetTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<TrnRange>();
+        var result = await response.Content.ReadFromJsonAsync<GetTrnRangeResponse>();
         Assert.NotNull(result);
         Assert.Equal(trnRange1.FromTrn, result.FromTrn);
         Assert.Equal(trnRange1.ToTrn, result.ToTrn);
@@ -142,7 +143,7 @@ public class GetTrnRangeTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(

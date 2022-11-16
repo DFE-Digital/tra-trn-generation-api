@@ -37,7 +37,7 @@ public class PostTrnRequestTests : IClassFixture<WebApplicationFactory<Program>>
             { "ApiKeys:1", "09876" }
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -89,7 +89,7 @@ public class PostTrnRequestTests : IClassFixture<WebApplicationFactory<Program>>
             trnRange2
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(
@@ -155,7 +155,7 @@ public class PostTrnRequestTests : IClassFixture<WebApplicationFactory<Program>>
             trnRange2
         };
 
-        var customFactory = _factory
+        using var customFactory = _factory
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureAppConfiguration(

@@ -9,7 +9,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 {
     private const string AuthenticationHeaderScheme = "Bearer";
 
-    private readonly IApiKeyValidator apiKeyValidator;
+    private readonly IApiKeyValidator _apiKeyValidator;
 
     public ApiKeyAuthenticationHandler(
         IApiKeyValidator apiKeyValidator,
@@ -19,7 +19,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         ISystemClock clock)
         : base(options, logger, encoder, clock)
     {
-        this.apiKeyValidator = apiKeyValidator;
+        _apiKeyValidator = apiKeyValidator;
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -37,7 +37,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         }
 
         var key = authorizationHeader[(AuthenticationHeaderScheme.Length + 1)..];
-        var isValidApiKey = await this.apiKeyValidator.IsValidAsync(key);
+        var isValidApiKey = await _apiKeyValidator.IsValidAsync(key);
 
         if (!isValidApiKey)
         {
