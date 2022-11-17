@@ -2,6 +2,8 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Sentry.AspNetCore;
+using Serilog;
 using TrnGeneratorApi.Models;
 using TrnGeneratorApi.Requests;
 using TrnGeneratorApi.Responses;
@@ -13,7 +15,29 @@ builder.WebHost.UseKestrel(options =>
     options.AddServerHeader = false;
 });
 
+builder.Host.UseSerilog((ctx, config) =>
+    config.ReadFrom.Configuration(ctx.Configuration));
+
 builder.Services.AddApplicationInsightsTelemetry();
+if (builder.Environment.IsProduction())
+{
+    builder.WebHost.UseSentry();
+    builder.Services.Configure<SentryAspNetCoreOptions>(options =>
+    {
+        var hostingEnvironmentName = builder.Configuration["EnvironmentName"];
+        if (!string.IsNullOrEmpty(hostingEnvironmentName))
+        {
+            options.Environment = hostingEnvironmentName;
+        }
+
+        var gitSha = builder.Configuration["GitSha"];
+        if (!string.IsNullOrEmpty(gitSha))
+        {
+            options.Release = gitSha;
+        }
+    });
+}
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -57,6 +81,8 @@ if (builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 if (builder.Environment.IsProduction() &&
     Environment.GetEnvironmentVariable("WEBSITE_ROLE_INSTANCE_ID") == "0")
