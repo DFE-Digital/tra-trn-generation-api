@@ -20,7 +20,7 @@ builder.Host.UseSerilog((ctx, config) =>
 
 builder.Services.AddApplicationInsightsTelemetry();
 if (builder.Environment.IsProduction())
-{    
+{
     builder.WebHost.UseSentry();
     builder.Services.Configure<SentryAspNetCoreOptions>(options =>
     {
