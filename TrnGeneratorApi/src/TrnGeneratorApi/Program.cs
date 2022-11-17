@@ -66,110 +66,98 @@ app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
 
 var trnRequestsGroup = app.MapGroup("/api/v1/trn-requests");
-trnRequestsGroup.MapPost("/",
-[Authorize]
-async (TrnGeneratorDbContext dbContext) =>
-{
-    var nextTrn = await dbContext
-                    .Set<IntReturn>()
-                    .FromSqlRaw("SELECT \"fn_generate_trn\" as Value FROM fn_generate_trn()")
-                    .FirstOrDefaultAsync();
+trnRequestsGroup.MapPost("/", [Authorize] async (TrnGeneratorDbContext dbContext) =>
+    {
+        var nextTrn = await dbContext
+                        .Set<IntReturn>()
+                        .FromSqlRaw("SELECT \"fn_generate_trn\" as Value FROM fn_generate_trn()")
+                        .FirstOrDefaultAsync();
 
-    if (nextTrn != null && nextTrn.Value.HasValue)
-    {
-        return Results.Ok(nextTrn.Value);
-    }
-    else
-    {
-        return Results.NotFound();
-    }
-}
-)
-.WithTags("TRN Requests")
-.Produces<int>(StatusCodes.Status200OK)
-.Produces(StatusCodes.Status401Unauthorized)
-.Produces(StatusCodes.Status404NotFound);
+        if (nextTrn != null && nextTrn.Value.HasValue)
+        {
+            return Results.Ok(nextTrn.Value);
+        }
+        else
+        {
+            return Results.NotFound();
+        }
+    })
+    .WithTags("TRN Requests")
+    .Produces<int>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status401Unauthorized)
+    .Produces(StatusCodes.Status404NotFound);
 
 var trnRangesGroup = app.MapGroup("/api/v1/trn-ranges");
-trnRangesGroup.MapGet("/{fromTrn}",
-[Authorize]
-async (int fromTrn, TrnGeneratorDbContext dbContext) =>
-    await dbContext.TrnRanges.FindAsync(fromTrn)
-        is TrnRange trnRange
-            ? Results.Ok(trnRange.Adapt<GetTrnRangeResponse>())
-            : Results.NotFound()
-)
-.WithTags("TRN Ranges")
-.Produces<TrnRange>(StatusCodes.Status200OK)
-.Produces(StatusCodes.Status401Unauthorized)
-.Produces(StatusCodes.Status404NotFound);
+trnRangesGroup.MapGet("/{fromTrn}", [Authorize] async (int fromTrn, TrnGeneratorDbContext dbContext) =>
+        await dbContext.TrnRanges.FindAsync(fromTrn)
+            is TrnRange trnRange
+                ? Results.Ok(trnRange.Adapt<GetTrnRangeResponse>())
+                : Results.NotFound()
+    )
+    .WithTags("TRN Ranges")
+    .Produces<TrnRange>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status401Unauthorized)
+    .Produces(StatusCodes.Status404NotFound);
 
-trnRangesGroup.MapDelete("/{fromTrn}",
-[Authorize]
-async (int fromTrn, TrnGeneratorDbContext dbContext) =>
-{
-    if (await dbContext.TrnRanges.FindAsync(fromTrn) is TrnRange trnRange)
+trnRangesGroup.MapDelete("/{fromTrn}", [Authorize] async (int fromTrn, TrnGeneratorDbContext dbContext) =>
     {
-        if (trnRange.IsExhausted || trnRange.NextTrn != trnRange.FromTrn)
+        if (await dbContext.TrnRanges.FindAsync(fromTrn) is TrnRange trnRange)
         {
-            return Results.BadRequest("TRN ranges which have been fully or partially used cannot be deleted.");
+            if (trnRange.IsExhausted || trnRange.NextTrn != trnRange.FromTrn)
+            {
+                return Results.BadRequest("TRN ranges which have been fully or partially used cannot be deleted.");
+            }
+
+            dbContext.TrnRanges.Remove(trnRange);
+            await dbContext.SaveChangesAsync();
+            return Results.Ok(trnRange.Adapt<DeleteTrnRangeResponse>());
         }
 
-        dbContext.TrnRanges.Remove(trnRange);
+        return Results.NotFound();
+    })
+    .WithTags("TRN Ranges")
+    .Produces<TrnRange>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status400BadRequest)
+    .Produces(StatusCodes.Status401Unauthorized)
+    .Produces(StatusCodes.Status404NotFound);
+
+trnRangesGroup.MapGet("/", [Authorize] async (TrnGeneratorDbContext dbContext) =>
+    {
+        var trnRanges = await dbContext.TrnRanges.Select(r => r.Adapt<GetTrnRangeResponseBody>()).ToListAsync();
+        var response = new GetAllTrnRangesResponse
+        {
+            TrnRanges = trnRanges
+        };
+        return Results.Ok(response);
+    }
+    )
+    .WithTags("TRN Ranges")
+    .Produces<List<TrnRange>>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status401Unauthorized);
+
+trnRangesGroup.MapPost("/", [Authorize] async (CreateTrnRangeRequest createTrnRangeRequest, TrnGeneratorDbContext dbContext) =>
+    {
+        if (createTrnRangeRequest.ToTrn < createTrnRangeRequest.FromTrn)
+        {
+            return Results.BadRequest("toTrn should be greater than or equal to fromTrn.");
+        }
+
+        if (await dbContext.TrnRanges.AnyAsync(r => Math.Max(0, Math.Min(createTrnRangeRequest.ToTrn, r.ToTrn) - Math.Max(createTrnRangeRequest.FromTrn, r.FromTrn) + 1) != 0))
+        {
+            return Results.BadRequest("New TRN range overlaps existing TRN range.");
+        }
+
+        var trnRange = createTrnRangeRequest.Adapt<TrnRange>();
+        trnRange.NextTrn = trnRange.FromTrn;
+        dbContext.TrnRanges.Add(trnRange);
         await dbContext.SaveChangesAsync();
-        return Results.Ok(trnRange.Adapt<DeleteTrnRangeResponse>());
-    }
-
-    return Results.NotFound();
-}
-)
-.WithTags("TRN Ranges")
-.Produces<TrnRange>(StatusCodes.Status200OK)
-.Produces(StatusCodes.Status400BadRequest)
-.Produces(StatusCodes.Status401Unauthorized)
-.Produces(StatusCodes.Status404NotFound);
-
-trnRangesGroup.MapGet("/",
-[Authorize]
-async (TrnGeneratorDbContext dbContext) =>
-{
-    var trnRanges = await dbContext.TrnRanges.Select(r => r.Adapt<GetTrnRangeResponseBody>()).ToListAsync();
-    var response = new GetAllTrnRangesResponse
-    {
-        TrnRanges = trnRanges
-    };
-    return Results.Ok(response);
-}
-)
-.WithTags("TRN Ranges")
-.Produces<List<TrnRange>>(StatusCodes.Status200OK)
-.Produces(StatusCodes.Status401Unauthorized);
-
-trnRangesGroup.MapPost("/",
-[Authorize]
-async (CreateTrnRangeRequest createTrnRangeRequest, TrnGeneratorDbContext dbContext) =>
-{
-    if (createTrnRangeRequest.ToTrn < createTrnRangeRequest.FromTrn)
-    {
-        return Results.BadRequest("toTrn should be greater than or equal to fromTrn.");
-    }
-
-    if (await dbContext.TrnRanges.AnyAsync(r => Math.Max(0, Math.Min(createTrnRangeRequest.ToTrn, r.ToTrn) - Math.Max(createTrnRangeRequest.FromTrn, r.FromTrn) + 1) != 0))
-    {
-        return Results.BadRequest("New TRN range overlaps existing TRN range.");
-    }
-
-    var trnRange = createTrnRangeRequest.Adapt<TrnRange>();
-    trnRange.NextTrn = trnRange.FromTrn;
-    dbContext.TrnRanges.Add(trnRange);
-    await dbContext.SaveChangesAsync();
-    var createTrnRangeResponse = trnRange.Adapt<CreateTrnRangeResponse>();
-    return Results.Created($"/api/v1/trn-ranges/{createTrnRangeResponse.FromTrn}", createTrnRangeResponse);
-})
-.WithTags("TRN Ranges")
-.Produces(StatusCodes.Status201Created)
-.Produces(StatusCodes.Status400BadRequest)
-.Produces(StatusCodes.Status401Unauthorized);
+        var createTrnRangeResponse = trnRange.Adapt<CreateTrnRangeResponse>();
+        return Results.Created($"/api/v1/trn-ranges/{createTrnRangeResponse.FromTrn}", createTrnRangeResponse);
+    })
+    .WithTags("TRN Ranges")
+    .Produces(StatusCodes.Status201Created)
+    .Produces(StatusCodes.Status400BadRequest)
+    .Produces(StatusCodes.Status401Unauthorized);
 
 app.Run();
 
