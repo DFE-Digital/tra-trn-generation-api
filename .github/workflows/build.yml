@@ -18,17 +18,31 @@ jobs:
     name: Build & test
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: trn_generator
+          POSTGRES_PASSWORD: trn_generator
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
     - uses: actions/checkout@v3
 
     - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '7.0.x'
 
     - name: Lint
       run: |
         #https://github.com/dotnet/format/issues/1433
-        dotnet tool install -g dotnet-format --version "6.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
+        dotnet tool install -g dotnet-format --version "7.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json
         dotnet-format --verify-no-changes
       working-directory: TrnGeneratorApi
 
@@ -39,5 +53,6 @@ jobs:
     - name: Tests
       uses: ./.github/workflows/actions/test
       with:
-        test_project_path: TrnGeneratorApi/tests/TrnGeneratorApi.Tests
+        test_project_path: TrnGeneratorApi/tests/TrnGeneratorApi.IntegrationTests
         report_name: "Test results"
+        dotnet_test_args: '-e ConnectionStrings__DefaultConnection="Host=localhost;Username=postgres;Password=trn_generator;Database=trn_generator" -e ApiKeys__0="12345"'
