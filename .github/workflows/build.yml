@@ -13,6 +13,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CONTAINER_REGISTRY: ghcr.io
+
 jobs:
   build:
     name: Build & test
