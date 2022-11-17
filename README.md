@@ -1,4 +1,4 @@
-# TRN Generator API
+# TRN Generation API
 
 ## Overview
 

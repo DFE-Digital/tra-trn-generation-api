@@ -12,9 +12,13 @@ builder.WebHost.UseKestrel(options =>
 {
     options.AddServerHeader = false;
 });
+
+builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.SwaggerDoc("v1", new OpenApiInfo() { Title = "TRN Generation API", Version = "v1" });
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {
         In = ParameterLocation.Header,
@@ -95,7 +99,7 @@ trnRangesGroup.MapGet("/{fromTrn}", [Authorize] async (int fromTrn, TrnGenerator
                 : Results.NotFound()
     )
     .WithTags("TRN Ranges")
-    .Produces<TrnRange>(StatusCodes.Status200OK)
+    .Produces<GetTrnRangeResponse>(StatusCodes.Status200OK)
     .Produces(StatusCodes.Status401Unauthorized)
     .Produces(StatusCodes.Status404NotFound);
 
@@ -116,7 +120,7 @@ trnRangesGroup.MapDelete("/{fromTrn}", [Authorize] async (int fromTrn, TrnGenera
         return Results.NotFound();
     })
     .WithTags("TRN Ranges")
-    .Produces<TrnRange>(StatusCodes.Status200OK)
+    .Produces<DeleteTrnRangeResponse>(StatusCodes.Status200OK)
     .Produces(StatusCodes.Status400BadRequest)
     .Produces(StatusCodes.Status401Unauthorized)
     .Produces(StatusCodes.Status404NotFound);
@@ -132,7 +136,7 @@ trnRangesGroup.MapGet("/", [Authorize] async (TrnGeneratorDbContext dbContext) =
     }
     )
     .WithTags("TRN Ranges")
-    .Produces<List<TrnRange>>(StatusCodes.Status200OK)
+    .Produces<GetAllTrnRangesResponse>(StatusCodes.Status200OK)
     .Produces(StatusCodes.Status401Unauthorized);
 
 trnRangesGroup.MapPost("/", [Authorize] async (CreateTrnRangeRequest createTrnRangeRequest, TrnGeneratorDbContext dbContext) =>
@@ -155,9 +159,12 @@ trnRangesGroup.MapPost("/", [Authorize] async (CreateTrnRangeRequest createTrnRa
         return Results.Created($"/api/v1/trn-ranges/{createTrnRangeResponse.FromTrn}", createTrnRangeResponse);
     })
     .WithTags("TRN Ranges")
-    .Produces(StatusCodes.Status201Created)
+    .Produces<CreateTrnRangeResponse>(StatusCodes.Status201Created)
     .Produces(StatusCodes.Status400BadRequest)
     .Produces(StatusCodes.Status401Unauthorized);
+
+app.MapGet("/health", () => Results.Ok("OK"))
+    .WithTags("Health");
 
 app.Run();
 
