@@ -1,4 +1,4 @@
-﻿namespace TrnGeneratorApi.Responses;
+namespace TrnGeneratorApi.Responses;
 
 public record DeleteTrnRangeResponse
 {

@@ -72,7 +72,7 @@ async (TrnGeneratorDbContext dbContext) =>
 {
     var nextTrn = await dbContext
                     .Set<IntReturn>()
-                    .FromSqlRaw("SELECT \"fn_generate_trn\" as Value FROM fn_generate_trn()")                    
+                    .FromSqlRaw("SELECT \"fn_generate_trn\" as Value FROM fn_generate_trn()")
                     .FirstOrDefaultAsync();
 
     if (nextTrn != null && nextTrn.Value.HasValue)
@@ -160,7 +160,7 @@ async (CreateTrnRangeRequest createTrnRangeRequest, TrnGeneratorDbContext dbCont
     }
 
     var trnRange = createTrnRangeRequest.Adapt<TrnRange>();
-    trnRange.NextTrn = trnRange.FromTrn;    
+    trnRange.NextTrn = trnRange.FromTrn;
     dbContext.TrnRanges.Add(trnRange);
     await dbContext.SaveChangesAsync();
     var createTrnRangeResponse = trnRange.Adapt<CreateTrnRangeResponse>();
