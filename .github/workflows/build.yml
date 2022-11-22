@@ -1,17 +1,13 @@
-name: Build
+name: Build and Deploy
 
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
     branches:
-    - main
+      - main
   workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 env:
   CONTAINER_REGISTRY: ghcr.io
@@ -20,6 +16,9 @@ jobs:
   build:
     name: Build & test
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
 
     services:
       postgres:
@@ -36,51 +35,76 @@ jobs:
           - 5432:5432
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '7.0.x'
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.0.x"
 
-    - name: Lint
-      run: |
-        #https://github.com/dotnet/format/issues/1433
-        dotnet tool install -g dotnet-format --version "7.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json
-        dotnet-format --verify-no-changes
-      working-directory: TrnGeneratorApi
+      - name: Lint
+        run: |
+          #https://github.com/dotnet/format/issues/1433
+          dotnet tool install -g dotnet-format --version "7.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json
+          dotnet-format --verify-no-changes
+        working-directory: TrnGeneratorApi
 
-    - name: Build
-      run: dotnet build --configuration Release
-      working-directory: TrnGeneratorApi
+      - name: Build
+        run: dotnet build --configuration Release
+        working-directory: TrnGeneratorApi
 
-    - name: Tests
-      uses: ./.github/workflows/actions/test
-      with:
-        test_project_path: TrnGeneratorApi/tests/TrnGeneratorApi.IntegrationTests
-        report_name: "Test results"
-        dotnet_test_args: '-e ConnectionStrings__DefaultConnection="Host=localhost;Username=postgres;Password=trn_generator;Database=trn_generator" -e ApiKeys__0="12345"'
+      - name: Tests
+        uses: ./.github/workflows/actions/test
+        with:
+          test_project_path: TrnGeneratorApi/tests/TrnGeneratorApi.IntegrationTests
+          report_name: "Test results"
+          dotnet_test_args: '-e ConnectionStrings__DefaultConnection="Host=localhost;Username=postgres;Password=trn_generator;Database=trn_generator" -e ApiKeys__0="12345"'
 
-    - name: Publish
-      run: dotnet publish --configuration Release --no-build src/TrnGeneratorApi/TrnGeneratorApi.csproj
-      working-directory: TrnGeneratorApi
+      - name: Publish
+        run: dotnet publish --configuration Release --no-build src/TrnGeneratorApi/TrnGeneratorApi.csproj
+        working-directory: TrnGeneratorApi
 
-    - name: Docker image tag
-      id: imagen
-      run: |
-        echo "tag=$CONTAINER_REGISTRY/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]'):$GITHUB_SHA"  >> $GITHUB_ENV
+      - name: Docker image tag
+        id: imagen
+        run: |
+          echo "tag=$CONTAINER_REGISTRY/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]'):$GITHUB_SHA"  >> $GITHUB_ENV
 
-    - name: Login to GitHub Cotainer Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ${{ env.CONTAINER_REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to GitHub Cotainer Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Docker build & push
-      uses: docker/build-push-action@v2
-      with:
-        context: TrnGeneratorApi/src/TrnGeneratorApi
-        push: true
-        tags: ${{ env.tag }}
-        build-args: |
-          GIT_SHA=${{ github.sha }}
+      - name: Docker build & push
+        uses: docker/build-push-action@v2
+        with:
+          context: TrnGeneratorApi/src/TrnGeneratorApi
+          push: true
+          tags: ${{ env.tag }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+
+  deploy:
+    name: Deploy to ${{ matrix.environment }} environment
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    concurrency: deploy_${{ matrix.environment }}
+    needs: [build]
+    strategy:
+      max-parallel: 1
+      matrix:
+        environment: [dev]
+    environment:
+      name: ${{ matrix.environment }}
+      url: ${{ steps.deploy.outputs.environment_url }}
+    outputs:
+       environment_url: ${{ steps.deploy.outputs.environment_url }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/deploy-environment
+        id: deploy
+        with:
+          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          environment_name: ${{ matrix.environment }}

@@ -33,3 +33,4 @@ runs:
         name: ${{ inputs.report_name }}
         path: '${{ inputs.test_project_path }}/**/*.trx'
         reporter: dotnet-trx
+
