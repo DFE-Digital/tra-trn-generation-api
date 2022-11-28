@@ -56,6 +56,20 @@ validate-keyvault-secret: read-keyvault-config install-fetch-config set-azure-ac
 	bin/fetch_config.rb -s azure-key-vault-secret:${KEY_VAULT_NAME}/${KEY_VAULT_SECRET_NAME} -d quiet \
 		&& echo Data in ${KEY_VAULT_NAME}/${KEY_VAULT_SECRET_NAME} looks valid
 
+terraform-init:
+	$(if $(IMAGE_TAG), , $(eval export IMAGE_TAG=main))
+	[[ "${SP_AUTH}" != "true" ]] && az account set -s $(AZURE_SUBSCRIPTION) || true
+	terraform -chdir=terraform init -backend-config workspace_variables/${DEPLOY_ENV}.backend.tfvars $(backend_config) -upgrade -reconfigure
+
+terraform-plan: terraform-init # make dev terraform-plan
+	terraform -chdir=terraform plan -var-file workspace_variables/${DEPLOY_ENV}.tfvars.json
+
+terraform-apply: terraform-init # make dev terraform-apply
+	terraform -chdir=terraform apply -var-file workspace_variables/${DEPLOY_ENV}.tfvars.json ${AUTO_APPROVE}
+
+terraform-destroy: terraform-init # make dev terraform-destroy
+	terraform -chdir=terraform destroy -var-file workspace_variables/${DEPLOY_ENV}.tfvars.json ${AUTO_APPROVE}
+
 deploy-azure-resources: set-azure-account set-azure-template-tag set-azure-resource-group-tags# make dev deploy-azure-resources AUTO_APPROVE=1
 	$(if $(AUTO_APPROVE), , $(error can only run with AUTO_APPROVE))
 	az deployment sub create -l "West Europe" --template-uri "https://raw.githubusercontent.com/DFE-Digital/tra-shared-services/${ARM_TEMPLATE_TAG}/azure/resourcedeploy.json" \
@@ -69,4 +83,3 @@ validate-azure-resources: set-azure-account set-azure-template-tag set-azure-res
 			"tfStorageAccountName=${RESOURCE_NAME_PREFIX}trngentfstate${ENV_SHORT}" "tfStorageContainerName=trngen-tfstate" \
 			"keyVaultName=${RESOURCE_NAME_PREFIX}-trngen-${ENV_SHORT}-kv" \
 		--what-if
-
