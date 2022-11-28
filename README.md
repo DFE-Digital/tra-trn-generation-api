@@ -12,7 +12,9 @@ The API is an ASP.NET Core 7 web application. To develop locally you will need t
 - Visual Studio 2022 (or the .NET 7 SDK and an alternative IDE/editor);
 - a local PostgreSQL 13+ instance;
 
-#### Initial setup
+### Initial setup
+
+#### User Secrets
 
 Install PostgreSQL then add a connection string to user secrets for the `TrnGeneratorApi` and `TrnGeneratorApi.IntegrationTests` projects.
 
@@ -29,3 +31,19 @@ dotnet user-secrets --id TrnGeneratorApi set ApiKeys:0 "your_API_Key"
 ```
 
 Where `your_API_Key` will be used in the `Authorization` header in calls to the API e.g. `Bearer your_API_Key`
+
+#### Database setup
+
+To create the initial database you need to apply the Entity Framework migrations.
+
+In Visual Studio, launch the Package Manager Console from the `Tools -> NuGet Package Manager -> Package Manager Console` menu option.
+
+In the Package Manager Console ensure that the `Default Project` option is set to `src\TrnGeneratorApi`.
+
+At the prompt execute the `Update-Database` command.
+
+```
+PM> Update-Database
+```
+
+Launch `pgAdmin` and verify that the database has been created in PostgreSQL.
