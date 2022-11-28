@@ -36,14 +36,32 @@ Where `your_API_Key` will be used in the `Authorization` header in calls to the 
 
 To create the initial database you need to apply the Entity Framework migrations.
 
+You can do this using the Package Manager Console in Visual Studio or using the .NET Core CLI.
+
+##### Package Manager Console
+
 In Visual Studio, launch the Package Manager Console from the `Tools -> NuGet Package Manager -> Package Manager Console` menu option.
 
 In the Package Manager Console ensure that the `Default Project` option is set to `src\TrnGeneratorApi`.
 
-At the prompt execute the `Update-Database` command.
+At the prompt execute the `Update-Database` command:
 
 ```
 PM> Update-Database
+```
+
+Launch `pgAdmin` and verify that the database has been created in PostgreSQL.
+
+###### .NET Core CLI
+
+Ensure that the Entity Framework .NET Core CLI tools are installed as detailed [here](https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools).
+
+Launch a commandline and set the current directory to the `src\TrnGeneratorApi` directory containing the .NET core project (i.e. which contains the EF migrations).
+
+At the prompt execute the following:
+
+```
+dotnet ef database update
 ```
 
 Launch `pgAdmin` and verify that the database has been created in PostgreSQL.
