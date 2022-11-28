@@ -1,6 +1,8 @@
 locals {
-  trngen_env_vars = local.infrastructure_secrets
-}
+  trngen_env_vars = merge(local.infrastructure_secrets,
+  {APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.web_app_insights.connection_string,
+  ConnectionStrings__DefaultConnection = "Server=${local.postgres_server_name}.postgres.database.azure.com;User Id=${local.infrastructure_secrets.POSTGRES_ADMIN_USERNAME};Password=${local.infrastructure_secrets.POSTGRES_ADMIN_PASSWORD};Database=${local.postgres_database_name};Port=5432;Trust Server Certificate=true;"})
+   }
 
 resource "azurerm_service_plan" "app_service_plan" {
   name                = local.app_service_plan_name
@@ -33,28 +35,7 @@ resource "azurerm_linux_web_app" "web_app" {
     http2_enabled       = true
     minimum_tls_version = "1.2"
     health_check_path   = "/health"
-    ip_restriction = [{
-      name     = "FrontDoor"
-      action   = "Allow"
-      priority = 1
-      headers = [{
-        x_azure_fdid      = []
-        x_fd_health_probe = []
-        x_forwarded_for   = []
-        x_forwarded_host  = []
-      }]
-
-      service_tag               = "AzureFrontDoor.Backend"
-      ip_address                = null
-      virtual_network_subnet_id = null
-    }]
-  }
-
-  lifecycle {
-    ignore_changes = [
-      tags
-    ]
-  }
+}
 }
 
 resource "azurerm_linux_web_app_slot" "web_app_slot" {
@@ -110,4 +91,18 @@ resource "azurerm_postgresql_flexible_server" "postgres-server" {
 resource "azurerm_postgresql_flexible_server_database" "postgres-database" {
   name      = local.postgres_database_name
   server_id = azurerm_postgresql_flexible_server.postgres-server.id
+}
+
+resource "azurerm_postgresql_flexible_server_firewall_rule" "postgres-fw-rule-azure" {
+  name             = "AllowAzure"
+  server_id        = azurerm_postgresql_flexible_server.postgres-server.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
+resource "azurerm_application_insights" "web_app_insights" {
+  name                = local.web_app_insights_name
+  resource_group_name = data.azurerm_resource_group.resource_group.name
+  location            = data.azurerm_resource_group.resource_group.location
+  application_type    = "web"
 }
