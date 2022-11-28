@@ -19,6 +19,9 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
+    outputs:
+      image_tag: ${{ steps.image.outputs.tag }}
+
 
     services:
       postgres:
@@ -64,9 +67,9 @@ jobs:
         working-directory: TrnGeneratorApi
 
       - name: Docker image tag
-        id: imagen
+        id: image
         run: |
-          echo "tag=$CONTAINER_REGISTRY/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]'):$GITHUB_SHA"  >> $GITHUB_ENV
+          echo "tag=$CONTAINER_REGISTRY/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]'):$GITHUB_SHA"  >> $GITHUB_OUTPUT
 
       - name: Login to GitHub Cotainer Registry
         uses: docker/login-action@v1
@@ -80,14 +83,14 @@ jobs:
         with:
           context: TrnGeneratorApi/src/TrnGeneratorApi
           push: true
-          tags: ${{ env.tag }}
+          tags: ${{ steps.image.outputs.tag }}
           build-args: |
             GIT_SHA=${{ github.sha }}
 
   deploy:
     name: Deploy to ${{ matrix.environment }} environment
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
     concurrency: deploy_${{ matrix.environment }}
     needs: [build]
     strategy:
@@ -108,3 +111,4 @@ jobs:
         with:
           azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
           environment_name: ${{ matrix.environment }}
+          image_tag: ${{ needs.build.outputs.image_tag }}

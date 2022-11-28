@@ -56,5 +56,6 @@ locals {
   postgres_server_name   = "${var.resource_prefix}-trngen-${var.environment_name}-psql"
   postgres_database_name = "trn_generation_api_production"
   web_app_name           = "${var.resource_prefix}-trngen-${var.environment_name}-app"
+  web_app_insights_name  = "${var.resource_prefix}-trngen-${var.environment_name}-appi"
   web_app_slot_name      = "staging"
 }

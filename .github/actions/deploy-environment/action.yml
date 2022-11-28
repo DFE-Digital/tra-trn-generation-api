@@ -7,6 +7,9 @@ inputs:
   environment_name:
     description: The name of the environment
     required: true
+  image_tag:
+    description: Docker image tag
+    required: true
 
 outputs:
   environment_url:
@@ -17,12 +20,57 @@ runs:
   using: composite
 
   steps:
+    # Extract configuration from tfvars
+    - id: config
+      run: |
+        RESOURCE_GROUP_NAME=$(jq -er '.resource_group_name' $TFVARS)
+        STORAGE_ACCOUNT_NAME=$(jq -r '.storage_account_name' $TFVARS)
+        TERRAFORM_VERSION=$(awk '/{/{f=/^terraform/;next}f' terraform.tf | grep -o '[0-9\.]\+')
+        echo "resource_group_name=$RESOURCE_GROUP_NAME" >> $GITHUB_ENV
+        echo "storage_account_name=$STORAGE_ACCOUNT_NAME" >> $GITHUB_ENV
+        echo "terraform_version=$TERRAFORM_VERSION" >> $GITHUB_ENV
+      shell: bash
+      env:
+        TFVARS: workspace_variables/${{ inputs.environment_name }}.tfvars.json
 
-   - uses: Azure/login@v1
-     with:
-       creds: ${{ inputs.azure_credentials }}
+      working-directory: terraform
 
-   - id: deploy-arm-resources
-     run: |
-       make ci ${{ inputs.environment_name }} deploy-azure-resources
-     shell: bash
+    - uses: Azure/login@v1
+      with:
+        creds: ${{ inputs.azure_credentials }}
+
+    - id: deploy-arm-resources
+      run: |
+        make ci ${{ inputs.environment_name }} deploy-azure-resources
+      shell: bash
+
+    # get TFSTATE-CONTAINER-ACCESS-KEY
+    - run: |
+        TFSTATE_CONTAINER_ACCESS_KEY="$(az storage account keys list -g ${{ env.resource_group_name }} -n ${{ env.storage_account_name }} | jq -r '.[0].value')"
+        echo "::add-mask::$TFSTATE_CONTAINER_ACCESS_KEY"
+        echo "TFSTATE_CONTAINER_ACCESS_KEY=$TFSTATE_CONTAINER_ACCESS_KEY" >> $GITHUB_ENV
+      shell: bash
+
+    - uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ env.terraform_version }}
+        terraform_wrapper: false
+
+    - id: terraform
+      run: |
+        make ci ${{ inputs.environment_name }} terraform-apply
+        cd terraform
+        OUTPUTS=($(terraform output --json | jq -r 'keys | @sh' | tr -d \'))
+        for o in "${OUTPUTS[@]}"
+        do
+          echo "${o}=$(terraform output -raw ${o})" >> $GITHUB_ENV
+        done
+      env:
+        ARM_ACCESS_KEY: ${{ env.TFSTATE_CONTAINER_ACCESS_KEY }}
+        TF_VAR_azure_sp_credentials_json: ${{ inputs.azure_credentials }}
+      shell: bash
+
+    - uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.web_app_name }}
+        images: ${{ inputs.image_tag }}
