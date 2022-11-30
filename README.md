@@ -52,7 +52,7 @@ PM> Update-Database
 
 Launch `pgAdmin` and verify that the database has been created in PostgreSQL.
 
-###### .NET Core CLI
+##### .NET Core CLI
 
 Ensure that the Entity Framework .NET Core CLI tools are installed as detailed [here](https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools).
 
