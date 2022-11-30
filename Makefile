@@ -14,6 +14,14 @@ dev:
 	$(eval ENV_SHORT=dv)
 	$(eval ENV_TAG=dev)
 
+.PHONY: domain
+domain:
+	$(eval DEPLOY_ENV=production)
+	$(eval AZURE_SUBSCRIPTION=s165-teachingqualificationsservice-production)
+	$(eval RESOURCE_NAME_PREFIX=s165p01)
+	$(eval ENV_SHORT=pd)
+	$(eval ENV_TAG=prod)
+
 ci:	## Run in automation environment
 	$(eval DISABLE_PASSCODE=true)
 	$(eval AUTO_APPROVE=-auto-approve)
@@ -83,3 +91,9 @@ validate-azure-resources: set-azure-account set-azure-template-tag set-azure-res
 			"tfStorageAccountName=${RESOURCE_NAME_PREFIX}trngentfstate${ENV_SHORT}" "tfStorageContainerName=trngen-tfstate" \
 			"keyVaultName=${RESOURCE_NAME_PREFIX}-trngen-${ENV_SHORT}-kv" \
 		--what-if
+
+domain-azure-resources: set-azure-account set-azure-template-tag set-azure-resource-group-tags# make domain domain-azure-resources AUTO_APPROVE=1
+	$(if $(AUTO_APPROVE), , $(error can only run with AUTO_APPROVE))
+	az deployment sub create -l "West Europe" --template-uri "https://raw.githubusercontent.com/DFE-Digital/tra-shared-services/${ARM_TEMPLATE_TAG}/azure/resourcedeploy.json" \
+		--parameters "resourceGroupName=${RESOURCE_NAME_PREFIX}-trngendomains-rg" 'tags=${RG_TAGS}' \
+			"tfStorageAccountName=${RESOURCE_NAME_PREFIX}trngendomainstf" "tfStorageContainerName=trngendomains-tf"  "keyVaultName=${RESOURCE_NAME_PREFIX}-trngendomains-kv"
