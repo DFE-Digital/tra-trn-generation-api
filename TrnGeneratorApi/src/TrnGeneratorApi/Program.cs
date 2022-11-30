@@ -101,7 +101,7 @@ if (builder.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         c.EnablePersistAuthorization();
     });
-}    
+}
 
 var trnRequestsGroup = app.MapGroup("/api/v1/trn-requests");
 trnRequestsGroup.MapPost("/", [Authorize] async (TrnGeneratorDbContext dbContext) =>
