@@ -1,15 +1,15 @@
 locals {
   trngen_env_vars = merge(local.infrastructure_secrets,
-  {APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.web_app_insights.connection_string,
-  ConnectionStrings__DefaultConnection = "Server=${local.postgres_server_name}.postgres.database.azure.com;User Id=${local.infrastructure_secrets.POSTGRES_ADMIN_USERNAME};Password=${local.infrastructure_secrets.POSTGRES_ADMIN_PASSWORD};Database=${local.postgres_database_name};Port=5432;Trust Server Certificate=true;"})
-   }
+    { APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.web_app_insights.connection_string,
+  ConnectionStrings__DefaultConnection = "Server=${local.postgres_server_name}.postgres.database.azure.com;User Id=${local.infrastructure_secrets.POSTGRES_ADMIN_USERNAME};Password=${local.infrastructure_secrets.POSTGRES_ADMIN_PASSWORD};Database=${local.postgres_database_name};Port=5432;Trust Server Certificate=true;" })
+}
 
 resource "azurerm_service_plan" "app_service_plan" {
   name                = local.app_service_plan_name
   location            = data.azurerm_resource_group.resource_group.location
   resource_group_name = data.azurerm_resource_group.resource_group.name
   os_type             = "Linux"
-  sku_name            = "B1"
+  sku_name            = var.app_service_plan_sku_size
 
   lifecycle {
     ignore_changes = [
@@ -24,30 +24,38 @@ resource "azurerm_linux_web_app" "web_app" {
   resource_group_name = data.azurerm_resource_group.resource_group.name
   service_plan_id     = azurerm_service_plan.app_service_plan.id
   https_only          = true
+  dynamic "sticky_settings" {
+    for_each = var.enable_blue_green ? [1] : []
+    content {
+      app_setting_names = keys(data.azurerm_linux_web_app.web_app.app_settings)
+    }
+  }
+  app_settings = var.enable_blue_green ? data.azurerm_linux_web_app.web_app.app_settings : local.trngen_env_vars
 
   identity {
     type = "SystemAssigned"
   }
 
-  app_settings = local.trngen_env_vars
-
   site_config {
     http2_enabled       = true
     minimum_tls_version = "1.2"
     health_check_path   = "/health"
-}
+  }
 }
 
 resource "azurerm_linux_web_app_slot" "web_app_slot" {
   count          = var.enable_blue_green ? 1 : 0
   name           = local.web_app_slot_name
-  app_service_id = azurerm_linux_web_app.web_app
+  app_service_id = azurerm_linux_web_app.web_app.id
 
   site_config {
     http2_enabled       = true
     minimum_tls_version = "1.2"
     health_check_path   = "/health"
   }
+  depends_on = [
+    azurerm_service_plan.app_service_plan
+  ]
 
   app_settings = local.trngen_env_vars
 
