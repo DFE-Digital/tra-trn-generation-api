@@ -74,3 +74,10 @@ runs:
       with:
         app-name: ${{ env.web_app_name }}
         images: ${{ inputs.image_tag }}
+        slot-name: ${{ env.web_app_slot_name }}
+
+    - uses: azure/CLI@v1
+      if: ${{ env.web_app_slot_name != 'production' }}
+      with:
+        inlineScript: |
+          az webapp deployment slot swap -g ${{ env.resource_group_name }} -n ${{ env.web_app_name }} --slot ${{ env.web_app_slot_name }} --target-slot production

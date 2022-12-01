@@ -16,3 +16,8 @@ data "azurerm_key_vault_secret" "secrets" {
   key_vault_id = data.azurerm_key_vault.vault.id
   name         = each.key
 }
+
+data "azurerm_linux_web_app" "web_app" {
+  name                = local.web_app_name
+  resource_group_name = data.azurerm_resource_group.resource_group.name
+}
