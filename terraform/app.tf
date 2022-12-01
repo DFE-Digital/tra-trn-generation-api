@@ -5,11 +5,13 @@ locals {
 }
 
 resource "azurerm_service_plan" "app_service_plan" {
-  name                = local.app_service_plan_name
-  location            = data.azurerm_resource_group.resource_group.location
-  resource_group_name = data.azurerm_resource_group.resource_group.name
-  os_type             = "Linux"
-  sku_name            = var.app_service_plan_sku_size
+  name                   = local.app_service_plan_name
+  location               = data.azurerm_resource_group.resource_group.location
+  resource_group_name    = data.azurerm_resource_group.resource_group.name
+  os_type                = "Linux"
+  sku_name               = var.app_service_plan_sku_size
+  zone_balancing_enabled = var.worker_count != null ? true : false
+  worker_count           = var.worker_count
 
   lifecycle {
     ignore_changes = [
@@ -27,10 +29,11 @@ resource "azurerm_linux_web_app" "web_app" {
   dynamic "sticky_settings" {
     for_each = var.enable_blue_green ? [1] : []
     content {
-      app_setting_names = keys(data.azurerm_linux_web_app.web_app.app_settings)
+      app_setting_names = keys(data.azurerm_linux_web_app.web_app[0].app_settings)
     }
   }
-  app_settings = var.enable_blue_green ? data.azurerm_linux_web_app.web_app.app_settings : local.trngen_env_vars
+
+  app_settings = var.enable_blue_green ? data.azurerm_linux_web_app.web_app[0].app_settings : local.trngen_env_vars
 
   identity {
     type = "SystemAssigned"
