@@ -14,6 +14,32 @@ dev:
 	$(eval ENV_SHORT=dv)
 	$(eval ENV_TAG=dev)
 
+.PHONY: test
+test:
+	$(eval DEPLOY_ENV=test)
+	$(eval AZURE_SUBSCRIPTION=s165-teachingqualificationsservice-test)
+	$(eval RESOURCE_NAME_PREFIX=s165t01)
+	$(eval ENV_SHORT=ts)
+	$(eval ENV_TAG=test)
+
+.PHONY: preprod
+preprod:
+	$(eval DEPLOY_ENV=preprod)
+	$(eval AZURE_SUBSCRIPTION=s165-teachingqualificationsservice-test)
+	$(eval RESOURCE_NAME_PREFIX=s165t01)
+	$(eval ENV_SHORT=pp)
+	$(eval ENV_TAG=pre-prod)
+
+.PHONY: production
+production:
+	$(eval DEPLOY_ENV=production)
+	$(eval AZURE_SUBSCRIPTION=s165-teachingqualificationsservice-production)
+	$(eval RESOURCE_NAME_PREFIX=s165p01)
+	$(eval ENV_SHORT=pd)
+	$(eval ENV_TAG=prod)
+	$(eval AZURE_BACKUP_STORAGE_ACCOUNT_NAME=s165p01trngendbbackuppd)
+	$(eval AZURE_BACKUP_STORAGE_CONTAINER_NAME=trngen)
+
 .PHONY: domain
 domain:
 	$(eval DEPLOY_ENV=production)

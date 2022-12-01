@@ -22,7 +22,6 @@ jobs:
     outputs:
       image_tag: ${{ steps.image.outputs.tag }}
 
-
     services:
       postgres:
         image: postgres
@@ -87,21 +86,43 @@ jobs:
           build-args: |
             GIT_SHA=${{ github.sha }}
 
+  deploy_to_dev:
+    name: Deploy to dev environment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    concurrency: deploy_dev
+    needs: [build]
+    environment:
+      name: dev
+      url: ${{ steps.deploy.outputs.environment_url }}
+    outputs:
+      environment_url: ${{ steps.deploy.outputs.environment_url }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/deploy-environment
+        id: deploy
+        with:
+          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          environment_name: dev
+          image_tag: ${{ needs.build.outputs.image_tag }}
+
   deploy:
     name: Deploy to ${{ matrix.environment }} environment
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    if: github.ref == 'refs/heads/main'
     concurrency: deploy_${{ matrix.environment }}
     needs: [build]
     strategy:
       max-parallel: 1
       matrix:
-        environment: [dev]
+        environment: [test, preprod, production]
     environment:
       name: ${{ matrix.environment }}
       url: ${{ steps.deploy.outputs.environment_url }}
     outputs:
-       environment_url: ${{ steps.deploy.outputs.environment_url }}
+      environment_url: ${{ steps.deploy.outputs.environment_url }}
 
     steps:
       - uses: actions/checkout@v3

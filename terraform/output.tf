@@ -16,4 +16,4 @@ output "blue_green" {
 
 output "service_sku_size" {
   value = var.app_service_plan_sku_size
-  }
+}
