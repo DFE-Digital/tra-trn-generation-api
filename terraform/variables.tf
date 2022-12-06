@@ -56,6 +56,11 @@ variable "worker_count" {
   default     = null
 }
 
+variable "statuscake_alerts" {
+  type    = map(any)
+  default = {}
+}
+
 locals {
   hosting_environment    = var.environment_name
   app_service_plan_name  = "${var.resource_prefix}-trngen-${var.environment_name}-plan"
