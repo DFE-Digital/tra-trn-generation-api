@@ -1,6 +1,8 @@
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Sentry.AspNetCore;
 using Serilog;
@@ -19,6 +21,7 @@ builder.Host.UseSerilog((ctx, config) =>
     config.ReadFrom.Configuration(ctx.Configuration));
 
 builder.Services.AddApplicationInsightsTelemetry();
+
 if (builder.Environment.IsProduction())
 {
     builder.WebHost.UseSentry();
@@ -81,18 +84,6 @@ if (builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
-
-if (!builder.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler(appBuilder =>
-    {
-        appBuilder.Run(async context =>
-        {
-            await Results.Problem()
-                .ExecuteAsync(context);
-        });
-    });
-}
 
 app.UseSerilogRequestLogging();
 
