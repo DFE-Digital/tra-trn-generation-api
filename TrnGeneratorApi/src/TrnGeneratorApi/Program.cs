@@ -87,10 +87,10 @@ if (!builder.Environment.IsDevelopment())
 {
     app.UseExceptionHandler(appBuilder =>
     {
-        appBuilder.Run(async (context) =>
+        appBuilder.Run(context =>
         {
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         });
     });
 }
