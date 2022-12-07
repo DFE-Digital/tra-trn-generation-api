@@ -116,11 +116,6 @@ if (builder.Environment.IsDevelopment())
     });
 }
 
-app.Map("/exception", () =>
-    {
-        throw new InvalidOperationException("Oh dear, what the devil just happened??");
-    });
-
 var trnRequestsGroup = app.MapGroup("/api/v1/trn-requests");
 trnRequestsGroup.MapPost("/", [Authorize] async (TrnGeneratorDbContext dbContext) =>
     {
