@@ -19,6 +19,7 @@ builder.Host.UseSerilog((ctx, config) =>
     config.ReadFrom.Configuration(ctx.Configuration));
 
 builder.Services.AddApplicationInsightsTelemetry();
+
 if (builder.Environment.IsProduction())
 {
     builder.WebHost.UseSentry();
