@@ -83,17 +83,17 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-if (!builder.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler(appBuilder =>
-    {
-        appBuilder.Run(context =>
-        {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            return Task.CompletedTask;
-        });
-    });
-}
+////if (!builder.Environment.IsDevelopment())
+////{
+////    app.UseExceptionHandler(appBuilder =>
+////    {
+////        appBuilder.Run(context =>
+////        {
+////            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+////            return Task.CompletedTask;
+////        });
+////    });
+////}
 
 app.UseSerilogRequestLogging();
 
@@ -115,6 +115,11 @@ if (builder.Environment.IsDevelopment())
         c.EnablePersistAuthorization();
     });
 }
+
+app.Map("/exception", () =>
+    {
+        throw new InvalidOperationException("Oh dear, what the devil just happened??");
+    });
 
 var trnRequestsGroup = app.MapGroup("/api/v1/trn-requests");
 trnRequestsGroup.MapPost("/", [Authorize] async (TrnGeneratorDbContext dbContext) =>
