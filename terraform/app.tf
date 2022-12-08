@@ -1,11 +1,12 @@
 locals {
-  trngen_env_vars = merge(local.infrastructure_secrets,
-    {
-      APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.web_app_insights.connection_string
-      Serilog__WriteTo__2__Args__uri        = local.infrastructure_secrets.LOGSTASH_ENDPOINT
-      ConnectionStrings__DefaultConnection  = "Server=${local.postgres_server_name}.postgres.database.azure.com;User Id=${local.infrastructure_secrets.POSTGRES_ADMIN_USERNAME};Password=${local.infrastructure_secrets.POSTGRES_ADMIN_PASSWORD};Database=${local.postgres_database_name};Port=5432;Trust Server Certificate=true;"
-    }
-  )
+  trngen_env_vars = {
+    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.web_app_insights.connection_string
+    Serilog__WriteTo__2__Args__uri        = local.infrastructure_secrets.LOGSTASH_ENDPOINT
+    ConnectionStrings__DefaultConnection  = "Server=${local.postgres_server_name}.postgres.database.azure.com;User Id=${local.infrastructure_secrets.POSTGRES_ADMIN_USERNAME};Password=${local.infrastructure_secrets.POSTGRES_ADMIN_PASSWORD};Database=${local.postgres_database_name};Port=5432;Trust Server Certificate=true;"
+    ApiKeys__0                            = local.infrastructure_secrets.ApiKeys__0
+    ApiKeys__1                            = local.infrastructure_secrets.ApiKeys__1
+    Sentry__Dsn                           = local.infrastructure_secrets.SENTRY_DSN
+  }
 }
 
 resource "azurerm_service_plan" "app_service_plan" {
