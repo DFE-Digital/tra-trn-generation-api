@@ -12,6 +12,11 @@ variable "app_service_plan_sku_tier" {
   default = "Basic"
 }
 
+variable "storage_account" {
+  type = string
+  default = ""
+}
+
 variable "app_service_plan_sku_size" {
   type    = string
   default = "B1"
@@ -38,6 +43,11 @@ variable "postgres_flexible_server_sku" {
 variable "postgres_flexible_server_storage_mb" {
   type    = number
   default = 32768
+}
+
+variable "backup_container_delete_retention_days" {
+  default = 7
+  type    = number
 }
 
 variable "enable_postgres_high_availability" {
