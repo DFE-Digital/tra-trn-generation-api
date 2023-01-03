@@ -17,7 +17,7 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
     <PackageReference Include="Sentry.AspNetCore" Version="3.24.0" />
-    <PackageReference Include="Sentry.Serilog" Version="3.24.0" />
+    <PackageReference Include="Sentry.Serilog" Version="3.25.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageReference Include="Serilog.Expressions" Version="3.4.1" />
     <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
