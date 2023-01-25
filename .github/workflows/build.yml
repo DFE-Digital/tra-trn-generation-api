@@ -3,10 +3,10 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main
+      - deploy-smoke-test-trn
   pull_request:
     branches:
-      - main
+      - deploy-smoke-test-trn
   workflow_dispatch:
 
 env:
@@ -133,3 +133,10 @@ jobs:
           azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
           environment_name: ${{ matrix.environment }}
           image_tag: ${{ needs.build.outputs.image_tag }}
+
+      - uses: ./.github/actions/smoke-test
+        id: smoke-test
+        with:
+          environment: ${{ matrix.environment }}
+          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          url: ${{ steps.deploy.outputs.environment_url }}
