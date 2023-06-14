@@ -20,3 +20,24 @@ resource "statuscake_uptime_check" "alert" {
     address = each.value.website_url
   }
 }
+
+resource "statuscake_ssl_check" "domain-alert" {
+  for_each = var.statuscake_alerts
+
+  check_interval   = 3600 # Check once per hour
+  contact_groups   = each.value.contact_group
+  follow_redirects = true
+
+  alert_config {
+    alert_at = [3, 7, 30] # Alert 1 month, 1 week then 3 days before expiration
+
+    on_reminder = true
+    on_expiry   = true
+    on_broken   = true
+    on_mixed    = true
+  }
+
+  monitored_resource {
+    address = each.value.ssl_domain
+  }
+}
