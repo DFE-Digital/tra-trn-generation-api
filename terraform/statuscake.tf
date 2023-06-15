@@ -38,6 +38,6 @@ resource "statuscake_ssl_check" "domain-alert" {
   }
 
   monitored_resource {
-    address = each.value.website_name
+    address = each.value.ssl_domain
   }
 }
