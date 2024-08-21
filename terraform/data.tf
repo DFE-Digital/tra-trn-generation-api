@@ -18,7 +18,7 @@ data "azurerm_key_vault_secret" "secrets" {
 }
 
 data "azurerm_linux_web_app" "web_app" {
-  count = var.enable_blue_green ? 1 : 0
+  count               = var.enable_blue_green ? 1 : 0
   name                = local.web_app_name
   resource_group_name = data.azurerm_resource_group.resource_group.name
 }

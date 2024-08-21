@@ -13,7 +13,7 @@ variable "app_service_plan_sku_tier" {
 }
 
 variable "storage_account" {
-  type = string
+  type    = string
   default = ""
 }
 
