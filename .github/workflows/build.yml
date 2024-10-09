@@ -37,7 +37,7 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v3
         with:
@@ -92,7 +92,7 @@ jobs:
       environment_url: ${{ steps.deploy.outputs.environment_url }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: ./.github/actions/deploy-environment
         id: deploy
@@ -118,7 +118,7 @@ jobs:
       environment_url: ${{ steps.deploy.outputs.environment_url }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: ./.github/actions/deploy-environment
         id: deploy
