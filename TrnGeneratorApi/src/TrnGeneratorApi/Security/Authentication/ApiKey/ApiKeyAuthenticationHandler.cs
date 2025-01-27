@@ -12,12 +12,10 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
     private readonly IApiKeyValidator _apiKeyValidator;
 
     public ApiKeyAuthenticationHandler(
-        IApiKeyValidator apiKeyValidator,
         IOptionsMonitor<ApiKeyAuthenticationOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock)
-        : base(options, logger, encoder, clock)
+        IApiKeyValidator apiKeyValidator) : base(options, logger, encoder)
     {
         _apiKeyValidator = apiKeyValidator;
     }
