@@ -1,4 +1,4 @@
-# TRN Generation API
+# TRN Generation API (decommissioned)
 
 ## Overview
 
